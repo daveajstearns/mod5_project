@@ -143,17 +143,17 @@ def arima(data, order, keyword):
     mons4 = (np.datetime64('2023-01-01','M') - np.datetime64('2019-01-01','M')).tolist()
     plt.title('%s Months Out of Sample Forecast for %s'%(mons4,keyword))
 
-def rolling_stats(data, window, city):
+def rolling_stats(data, keyword, window):
     r_mean=data.rolling(window=window).mean()
     r_std=data.rolling(window=window).std()
     fig,ax = plt.subplots(figsize=(12,8))
-    sns.lineplot(x=data.index,y=data['indoor farming'])
-    sns.lineplot(x=data.index,y=r_mean['indoor farming'])
-    sns.lineplot(x=data.index,y=r_std['indoor farming'])
-    plt.legend([city, 'ROLLING MEAN', 'ROLLING STDEV'], loc='best')
+    sns.lineplot(x=data.index,y=data[keyword])
+    sns.lineplot(x=data.index,y=r_mean[keyword])
+    sns.lineplot(x=data.index,y=r_std[keyword])
+    plt.legend([keyword, 'ROLLING MEAN', 'ROLLING STDEV'], loc='best')
     plt.xlabel('TIME',size=18)
-    plt.ylabel('HOUSE PRICE USD', size=18)
-    plt.title(f'ROLLING STATS FOR %s'%city, size=24)
+    plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
+    plt.title(f'ROLLING STATS FOR %s'%keyword, size=24)
 
 def plot_ts(data,cities):
     fig, ax = plt.subplots(figsize=(12,8))
@@ -166,13 +166,6 @@ def plot_ts(data,cities):
 
 def dftest2(data):
     test = adfuller(data['instances'])
-    test_output = pd.Series(test[0:4], index=['Test Stat', 'P-Value', '# Lags', '# Observations'])
-    for key, value in test[4].items():
-        test_output['Critical Value (%s)' %key]=value
-    return(test_output)
-
-def dftest_urfa(data):
-    test = adfuller(data['urban farm'])
     test_output = pd.Series(test[0:4], index=['Test Stat', 'P-Value', '# Lags', '# Observations'])
     for key, value in test[4].items():
         test_output['Critical Value (%s)' %key]=value
@@ -192,8 +185,8 @@ def process_tweets(data):
     data = data.loc[~data.index.duplicated(keep='first')]
     return data
 
-def get_int(keyword):
-    pytrends.build_payload([keyword], geo='US', timeframe='2000-01-01 2019-01-01')
+def get_int(keyword, timeframe):
+    pytrends.build_payload([keyword], geo='US', timeframe=timeframe)
     ts = pytrends.interest_over_time()
     ts.drop(columns=['isPartial'], axis=1, inplace=True)
     return ts
@@ -271,3 +264,73 @@ def vader_process(data):
                                     bins=[-1,-0.051,0.049,1],
                                     labels=['negative','neutral','positive'])
     return data
+
+def dftest_tweets(data):
+    test = adfuller(data['sentiment'])
+    test_output = pd.Series(test[0:4], index=['Test Stat', 'P-Value', '# Lags', '# Observations'])
+    for key, value in test[4].items():
+        test_output['Critical Value (%s)' %key]=value
+    return(test_output)
+
+def nice_plot(data, keyword):
+    """Provided a time series data set and a specified keyword for which
+         interest data was pulled, the function will print a nice looking 
+          series graph in Seaborn."""
+    fig,ax=plt.subplots(figsize=(8,6))
+    sns.lineplot(x=data.index, y=data[keyword])
+    ax = plt.xlabel('TIME')
+    ax = plt.ylabel('GOOGLE TREND INTEREST INDEX')
+    plt.title('TIME SERIES VISUAL OF %s' % (keyword))
+    plt.show()
+
+def gen_dftest(data,keyword):
+    test = adfuller(data[keyword])
+    test_output = pd.Series(test[0:4], index=['Test Stat', 'P-Value', '# Lags', '# Observations'])
+    for key, value in test[4].items():
+        test_output['Critical Value (%s)' %key]=value
+    return(test_output)
+
+def szn_decomp(data, keyword, model=[], graphs=[]):
+    """Will provide seasonal_decomposition information via
+        `statsmodels seasonal_decompose`"""
+    for mod in model:
+        decomp = seasonal_decompose(data, model=mod)
+        trend = decomp.trend
+        seasonal = decomp.seasonal
+        residual = decomp.resid
+        fig,ax = plt.subplots(figsize=(12,8))
+        if 'trend' in graphs:
+            sns.lineplot(x=trend.index, y=trend, color='black')
+        if 'szn' in graphs:
+            sns.lineplot(x=seasonal.index, y=seasonal, color='green')
+        if 'residual' in graphs:
+            sns.lineplot(x=residual.index, y=residual)
+        plt.legend(['TREND', 'SEASONALITY', 'RESIDUALS'], loc='best')
+        plt.xlabel('TIME',size=18)
+        plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
+        if mod == 'additive':
+            plt.title(f'ADDITIVE MODEL FOR %s'%keyword, size=24)
+        if mod == 'multiplicative':
+            plt.title(f'MULTIPLICATIVE MODEL FOR %s'%keyword, size=24)
+
+def sarima_gs(data_model, data_train, data_val, keyword, m=52):
+    """Does an `auto_arima` search for the best parameters.
+        Prints a graph showing the training, test, and actual values.
+        train = training timeframe ['yyyy-mm-dd':'yyyy-mm-dd'] format
+        forecast = forecast timeframe ['yyyy-mm-dd':] format
+        m = can be changed to account for different types of seasonality
+        ---->'m' default is 52 for weekly, 12 is for monthly"""
+    model = auto_arima(data_model,start_p=0,d=1,start_q=0,start_P=0,D=1,start_Q=0,
+            trace=True, m=52, error_action='ignore', suppress_warnings=True)
+    model.fit(data_train)
+    forecast = model.predict(n_periods=len(data_val))
+    forecast = pd.DataFrame(forecast,index = data_val.index,columns=['prediction'])
+    # Plot the nice graphs
+    fig,ax = plt.subplots(figsize=(12,8))
+    sns.lineplot(x=data_train.index, y=data_train[keyword], color='black')
+    sns.lineplot(x=forecast.index, y=forecast['prediction'], color='green')
+    sns.lineplot(x=data_val.index, y=data_val[keyword], color='orange')
+    plt.legend(['TRAINING DATA', 'PREDICTIONS', 'ACTUAL'], loc='best')
+    plt.xlabel('TIME',size=18)
+    plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
+    plt.title(f'BEST SARIMA MODEL FOR %s'%keyword, size=24)
