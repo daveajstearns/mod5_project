@@ -319,10 +319,13 @@ def sarima_gs(data_model, data_train, data_val, keyword, m=52):
         train = training timeframe ['yyyy-mm-dd':'yyyy-mm-dd'] format
         forecast = forecast timeframe ['yyyy-mm-dd':] format
         m = can be changed to account for different types of seasonality
-        ---->'m' default is 52 for weekly, 12 is for monthly"""
-    model = auto_arima(data_model,start_p=0,d=1,start_q=0,start_P=0,D=1,start_Q=0,
-            trace=True, m=52, error_action='ignore', suppress_warnings=True)
+        ---->'m' default is 52 for weekly, 12 is for monthly
+        Will print out some graphs and give model best params"""
+    model = auto_arima(data_model,start_p=0,d=0,start_q=0,start_P=0,D=0,start_Q=0,
+            trace=True, m=52, seasonal=True, error_action='ignore', n_jobs=-1,
+             suppress_warnings=True, random_state=42)
     model.fit(data_train)
+    print(model.summary())
     forecast = model.predict(n_periods=len(data_val))
     forecast = pd.DataFrame(forecast,index = data_val.index,columns=['prediction'])
     # Plot the nice graphs
@@ -331,6 +334,32 @@ def sarima_gs(data_model, data_train, data_val, keyword, m=52):
     sns.lineplot(x=forecast.index, y=forecast['prediction'], color='green')
     sns.lineplot(x=data_val.index, y=data_val[keyword], color='orange')
     plt.legend(['TRAINING DATA', 'PREDICTIONS', 'ACTUAL'], loc='best')
+    plt.xlabel('TIME',size=18)
+    plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
+    plt.title(f'BEST SARIMA MODEL FOR %s'%keyword, size=24)
+
+def sarima(data_train, data_val, keyword, order, sorder, m=52):
+    """Does an `auto_arima` search for the best parameters.
+        Prints a graph showing the training, test, and actual values.
+        train = training timeframe ['yyyy-mm-dd':'yyyy-mm-dd'] format
+        forecast = forecast timeframe ['yyyy-mm-dd':] format
+        m = can be changed to account for different types of seasonality
+        ---->'m' default is 52 for weekly, 12 is for monthly
+        Will print out some graphs and give model best params"""
+    model = SARIMAX(data_train, order=order, seasonal_order=sorder,
+                      trend='t')
+    fit = model.fit(data_train)
+    # print(fit.summary())
+    forecast = model.predict(60)
+    print('Forecasting 60 months into the future from the\ntraining data (2016-2021).\n...\n...')
+    forecast = pd.DataFrame(forecast)
+    forecast = rename_column(forecast, 0, 'forecast')
+    # Plot the nice graphs
+    fig,ax = plt.subplots(figsize=(12,8))
+    sns.lineplot(x=data_train.index, y=data_train, color='black')
+    sns.lineplot(x=forecast.index, y=forecast['forecast'], color='green')
+    sns.lineplot(x=data_val.index, y=data_val, color='orange')
+    plt.legend(['TRAINING DATA', 'FORECAST', 'ACTUAL'], loc='best')
     plt.xlabel('TIME',size=18)
     plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
     plt.title(f'BEST SARIMA MODEL FOR %s'%keyword, size=24)
