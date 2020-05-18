@@ -12,4 +12,5 @@ A final package will be presented at a later date to include a more in depth ana
 
 
 
-Looking at the *Google Trends* data, 
+According to the data, *its true!*
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/gg_bk.jpg "Gotham Greens, Brooklyn")
