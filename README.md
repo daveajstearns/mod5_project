@@ -15,4 +15,7 @@ A final package will be presented at a later date to include a more in depth ana
 According to the data, *its true!*
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/pre_post_2010.png "Interest in Urban Ag")
   
-**But how true is that?** And moreover, can we expect people to be more aware of urban agriculture in the future? That is what this package aims to answer. I took the top five terms related to `indoor farming` and used `pytrends` to get their interest scores dating as far back as Google allows (2004). Read on through to the end, open the notebooks on a second screen, and introduce yourself to **_urban agriculture_**.
+**But how true is that?** And moreover, can we expect people to be more aware of urban agriculture in the future? That is what this package aims to answer. I took the top five terms related to `indoor farming` and used `pytrends` to get their interest scores dating as far back as Google allows (2004). Read on through to the end, open the notebooks on a second screen, and introduce yourself to **_urban agriculture_**.  
+  
+## Procedure  
+The first step in my approach to understanding how interest in urban farming has changed over time was to 
