@@ -150,7 +150,9 @@ def rolling_stats(data, keyword, window):
     sns.lineplot(x=data.index,y=data[keyword])
     sns.lineplot(x=data.index,y=r_mean[keyword])
     sns.lineplot(x=data.index,y=r_std[keyword])
-    plt.legend([keyword, 'ROLLING MEAN', 'ROLLING STDEV'], loc='best')
+    plt.axhline(data['2000':'2010'][keyword].mean(), xmax=0.39, linestyle='dashed', linewidth=5, color='w')
+    plt.axhline(data['2010':][keyword].mean(), xmin=0.4, linestyle='dashed', linewidth=5, color='g')
+    plt.legend([keyword, 'ROLLING MEAN', 'ROLLING STDEV', 'PRE-2010 AVG INTEREST', 'POST-2010 AVG INTEREST'], loc='best')
     plt.xlabel('TIME',size=18)
     plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
     plt.title(f'ROLLING STATS FOR %s'%keyword, size=24)
@@ -300,7 +302,7 @@ def szn_decomp(data, keyword, model=[], graphs=[]):
         residual = decomp.resid
         fig,ax = plt.subplots(figsize=(12,8))
         if 'trend' in graphs:
-            sns.lineplot(x=trend.index, y=trend, color='black')
+            sns.lineplot(x=trend.index, y=trend, color='w')
         if 'szn' in graphs:
             sns.lineplot(x=seasonal.index, y=seasonal, color='green')
         if 'residual' in graphs:
@@ -313,7 +315,7 @@ def szn_decomp(data, keyword, model=[], graphs=[]):
         if mod == 'multiplicative':
             plt.title(f'MULTIPLICATIVE MODEL FOR %s'%keyword, size=24)
 
-def sarima_gs(data_model, data_train, data_val, keyword, m=52):
+def sarima_gs(data_train, keyword):
     """Does an `auto_arima` search for the best parameters.
         Prints a graph showing the training, test, and actual values.
         train = training timeframe ['yyyy-mm-dd':'yyyy-mm-dd'] format
@@ -321,45 +323,62 @@ def sarima_gs(data_model, data_train, data_val, keyword, m=52):
         m = can be changed to account for different types of seasonality
         ---->'m' default is 52 for weekly, 12 is for monthly
         Will print out some graphs and give model best params"""
-    model = auto_arima(data_model,start_p=0,d=0,start_q=0,start_P=0,D=0,start_Q=0,
-            trace=True, m=52, seasonal=True, error_action='ignore', n_jobs=-1,
-             suppress_warnings=True, random_state=42)
-    model.fit(data_train)
-    print(model.summary())
-    forecast = model.predict(n_periods=len(data_val))
-    forecast = pd.DataFrame(forecast,index = data_val.index,columns=['prediction'])
-    # Plot the nice graphs
-    fig,ax = plt.subplots(figsize=(12,8))
-    sns.lineplot(x=data_train.index, y=data_train[keyword], color='black')
-    sns.lineplot(x=forecast.index, y=forecast['prediction'], color='green')
-    sns.lineplot(x=data_val.index, y=data_val[keyword], color='orange')
-    plt.legend(['TRAINING DATA', 'PREDICTIONS', 'ACTUAL'], loc='best')
-    plt.xlabel('TIME',size=18)
-    plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
-    plt.title(f'BEST SARIMA MODEL FOR %s'%keyword, size=24)
+    model = auto_arima(data_train, trace=True, start_p=0, start_q=0,
+            start_P=0, start_Q=0, seasonal=True, m=52, suppress_warnings=True,
+            D=1, error_action='ignore', approximation=False, random_state=42)
+    fitted = model.fit(data_train)
+    print(fitted.summary())
+    best_params = fitted.get_params()
+    print('\n\nThe best order parameters are {},{}\n'.format(best_params['order'],best_params['seasonal_order']))
 
-def sarima(data_train, data_val, keyword, order, sorder, m=52):
-    """Does an `auto_arima` search for the best parameters.
+def sarima(data_train, data_val, keyword, p, d, q,P, D, Q, m=52):
+    """Fits and plots SARIMAX model based on best_params from auto_arima.
         Prints a graph showing the training, test, and actual values.
         train = training timeframe ['yyyy-mm-dd':'yyyy-mm-dd'] format
         forecast = forecast timeframe ['yyyy-mm-dd':] format
         m = can be changed to account for different types of seasonality
         ---->'m' default is 52 for weekly, 12 is for monthly
         Will print out some graphs and give model best params"""
-    model = SARIMAX(data_train, order=order, seasonal_order=sorder,
+    model = SARIMAX(data_train, order=(p,d,q), seasonal_order=(P,D,Q,m),
                       trend='t')
     fit = model.fit(data_train)
-    # print(fit.summary())
+    print(fit.summary())
+    best_params = fit.get_params
+    print('The best order parameters are {}'.format(best_params))
     forecast = model.predict(60)
     print('Forecasting 60 months into the future from the\ntraining data (2016-2021).\n...\n...')
     forecast = pd.DataFrame(forecast)
     forecast = rename_column(forecast, 0, 'forecast')
     # Plot the nice graphs
     fig,ax = plt.subplots(figsize=(12,8))
-    sns.lineplot(x=data_train.index, y=data_train, color='black')
+    sns.lineplot(x=data_train.index, y=data_train[keyword], color='black')
     sns.lineplot(x=forecast.index, y=forecast['forecast'], color='green')
-    sns.lineplot(x=data_val.index, y=data_val, color='orange')
+    sns.lineplot(x=data_val.index, y=data_val[keyword], color='orange')
     plt.legend(['TRAINING DATA', 'FORECAST', 'ACTUAL'], loc='best')
     plt.xlabel('TIME',size=18)
     plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
     plt.title(f'BEST SARIMA MODEL FOR %s'%keyword, size=24)
+
+def make_chart(fit, name):
+    """Provided with a fitted model object, will create a dictionary for the evaluation metrics.
+    Then convert to data frame."""
+    dictionary = {'AIC': fit.aic, 'BIC':fit.bic, 'MAE':fit.mae, 'TRAIN RMSE':np.sqrt(mean_squared_error(master['2004':'2017']['interest'], forecast['2004-01-01':'2017-12-01'])),
+                                                      'TEST RMSE':np.sqrt(mean_squared_error(master['2018':]['interest'], forecast['2018-01-01':'2020-05-01']))}
+    frame = pd.DataFrame.from_dict(dictionary, orient='index')
+    frame = rename_column(frame, 0, name)
+    return frame
+
+def compare_scores(metric, data=[]):
+    scores = {}
+    for frame in data:
+        scores[frame.columns[0]] = (frame.loc[metric,:][0])
+    return scores
+
+def score_chart(x, y, metric):
+    fig, ax = plt.subplots(figsize=(14,8))
+    ax = sns.barplot(x=x,y=y)    
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
+    plt.xlabel('MODEL', size=20)
+    plt.ylabel(metric, size=20)
+    plt.title('COMPARISON OF {} FOR DIFFERENT MODELS'.format(metric), size=26)
+    plt.show()
