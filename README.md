@@ -1,7 +1,7 @@
 # Flatiron School Data Science Capstone Project
 ----
-## Abstract
-  
+## Abstract  
+The models made in this project utilized the SARIMA function of `auto_arima` to find the best parameters for the time series. The time series data was harvested using the `General Mills pytrends` pseudo-API for Google Trends. It was found that there was a statistically significant increase in interest in topics regarding *indoor farming* from pre-2010 to post-2010 - thus achieving its *topic of the decade* status. The best model used the parameters **(0,1,1)x(1,1,1,12)** with the lowest AIC, BIC, and Test RMSE amongst the seven models tested.
 ----
 ## Introduction
 The goal of this project is to utilize the skills obtained over the past three months of hard work and dedication in this intense data science bootcamp. Since the beginning of my time in the program, I have been exploring the concept of **urban farming** with consideration to my background in biology and agriculture. Urban farming is a complex subject; a revolutionary approach to agriculture due to its non-renewable resource reduction (water) but with a caveat in regards to the energy usage urban farms need in order to be feasible. An urban farm that has impact on its community is a farm that can continuously produce fresh produce year round without interruption. A simple garden on top of a building or in an amenity space, as we have seen in some areas, is not sufficient. The concept of urban agriculture is an industry disrupting idea, but one that I feel must take place in order to reduce food insecurity and transportation emissions, improve food safety, create food independence, and a host of other issues related to the difficulties we face with traditional ag.  
@@ -16,7 +16,7 @@ According to the data, *its true!*
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/pre_post_2010.png "Interest in Urban Ag")
   
 **But how true is that?** And moreover, can we expect people to be more aware of urban agriculture in the future? That is what this package aims to answer. I took the top five terms related to `indoor farming` and used `General Mills pytrends` - *a pseudo-API for Google Trends* - to get their interest scores dating as far back as Google allows (2004). Read on through to the end, open the notebooks on a second screen, and introduce yourself to **_urban agriculture_**.  
-  
+----
 ## Procedure & Results
 
 ### Data Aquisition  
@@ -116,6 +116,7 @@ It is no coincidence I only showed you the top two SARIMA models. The first and 
 A full breakdown of the winning events:  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/results.png "Final Results")  
   
+----
 ## Conclusions  
 The final model selected for this project was the **auto_model_1** which had the lowest metrics where it counted; AIC and Test RMSE. While the **auto_model_5** did have a lower Train RMSE and MAE, these metrics are secondary to the importance of out-of-sample predictions and goodness of fit.  
   
