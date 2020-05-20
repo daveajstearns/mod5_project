@@ -66,7 +66,7 @@ I also looked at the ACF and PACF graphs to help confirm my intuitions and see h
 The annual seasonality is present here as well.  
   
 ### Modeling  
-**For all of my modeling, I used a nearly 80:20 split by training on data between [2004 : 2017] (end of 2017) and testing on the rest of the data [2018 : 2020-05]. All models were asked to predict until 2024.**  
+**For all of my modeling, I used a nearly 90:10 split by training on data between [2004 : 2017] (end of 2017) and testing on the rest of the data [2018 : 2020-05]. All models were asked to predict until 2024.**  
   
 My first model was a naive baseline model using only one order of differencing. The results are as follows:  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/baseline.png "Baseline Model")  
