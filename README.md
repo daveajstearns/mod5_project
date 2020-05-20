@@ -55,4 +55,30 @@ I also looked at the ACF and PACF graphs to help confirm my intuitions and see h
   
 The annual seasonality is present here as well.  
   
-### Modeling
+### Modeling  
+**For all of my modeling, I used a nearly 80:20 split by training on data between [2004:2014] (end of 2014) and testing on the rest of the data [2015:2020-05]. All models were asked to predict until 2024.**  
+  
+My first model was a naive baseline model using only one order of differencing. The results are as follows:  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/baseline.png "Baseline Model")  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/baseline_stats.png "Baseline Model Stats")  
+
+I would like to point out that the histogram shows the distribution to be a little off-center from the normal curve, and thus lends to the notion that this model isn't the best. Also view the forecast graph and you will see the confidence interval is horrendous, as is the forecast.  
+  
+My second model was conceptualized based on the EDA, specifically the seasonal decomposition and ACF graphs.  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/eda_model.png "EDA Based Model")  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/eda_model_stats.png "EDA Based Model Stats")  
+  
+The QQ plot and histogram looks slightly improved, but the confidence interval is still ghastly. The forecast looks nice, but I cannot be confident in this model. The CI dips below 0 and above 100, and so I cannot support this model.   
+  
+After these two baseline models, I wanted to explore the `auto_arima` tool. I had been wanting to get this to work for a while and finally had it running. It is a tool that can basically gridsearch SARIMA parameters and base the best parameters off of whatever you set the information criterion to. I chose AIC for the purposes of this project. AIC, or Akaike Information Criterion, is a relative quality of fit metric that can help you find which model best fits the data. While this is an important metric, I also wanted to look at the MAE (mean absolute error) and RMSE (root mean squared error) as they both have a place in my evaluation sights. RMSE penalizes large errors, which I care about because I want my model to be accurate, and MAE is a bit more interpretable as it is simply the summed average mean of the absolute values of error.  
+  
+Here is an example of how to run an `auto_arima` search:  
+```
+model = auto_arima(master['2004':'2017'], trace=True, start_p=0, start_q=0, d=1,
+                  start_P=0, start_Q=0, seasonal=True, m=12, suppress_warnings=True, 
+                   D=1, error_action='ignore', approximation=False, trend='t', random_state=42)
+fitted = model.fit(master['2004':'2017'])
+```
+
+
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/eda_model_stats.png "EDA Based Model Stats") 
