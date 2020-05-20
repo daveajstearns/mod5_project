@@ -17,7 +17,7 @@ According to the data, *its true!*
   
 **But how true is that?** And moreover, can we expect people to be more aware of urban agriculture in the future? That is what this package aims to answer. I took the top five terms related to `indoor farming` and used `General Mills pytrends` - *a pseudo-API for Google Trends* - to get their interest scores dating as far back as Google allows (2004). Read on through to the end, open the notebooks on a second screen, and introduce yourself to **_urban agriculture_**.  
   
-## Procedure
+## Procedure & Results
 
 ### Data Aquisition  
 The first step in my approach to understanding how interest in urban farming has changed over time was to start pulling data. I knew the data would be relatively easy to obtain using `pytrends`. I did not anticipate the difficulty associated with using it efficiently and correctly. The user guide [can be found here.](https://github.com/GeneralMills/pytrends)  
@@ -72,13 +72,49 @@ The QQ plot and histogram looks slightly improved, but the confidence interval i
   
 After these two baseline models, I wanted to explore the `auto_arima` tool. I had been wanting to get this to work for a while and finally had it running. It is a tool that can basically gridsearch SARIMA parameters and base the best parameters off of whatever you set the information criterion to. I chose AIC for the purposes of this project. AIC, or Akaike Information Criterion, is a relative quality of fit metric that can help you find which model best fits the data. While this is an important metric, I also wanted to look at the MAE (mean absolute error) and RMSE (root mean squared error) as they both have a place in my evaluation sights. RMSE penalizes large errors, which I care about because I want my model to be accurate, and MAE is a bit more interpretable as it is simply the summed average mean of the absolute values of error.  
   
-Here is an example of how to run an `auto_arima` search:  
+Here is an example of how to run an `auto_arima` search and get the best parameters:  
 ```
 model = auto_arima(master['2004':'2017'], trace=True, start_p=0, start_q=0, d=1,
                   start_P=0, start_Q=0, seasonal=True, m=12, suppress_warnings=True, 
                    D=1, error_action='ignore', approximation=False, trend='t', random_state=42)
-fitted = model.fit(master['2004':'2017'])
+fitted = model.fit(master['2004':'2017'])  
+best_params = fitted.get_params()
+print('\n\nThe best order parameters are {},{}\n'.format(best_params['order'],best_params['seasonal_order']))
 ```
+The parameters used for this model were **(1,1,1)x(0,1,1,12)**.  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/auto_1.png "First Auto-Arima Based Model")  
+  
+Notice the tight confidence interval, decent in-sample and out-of-sample forecasts, and how the forecast post-data seems to follow a similar trend to 2010+. The stats also look good:  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/auto_1_stats.png "First Auto-Arima Based Model Stats")   
+  
+The QQ plot is tightly bound to the diagonal and the histogram shows a very normal distribution. Excellent model. 
+  
+I will skip ahead to my fifth `auto_arima` based model. If you would like to see the full progression and how I altered some of the hyperparameters along the way, please refer to the notebook.   
+  
+The parameters used for this model were **(1,0,1)x(2,0,2,12)**.  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/auto_5.png "Fifth Auto-Arima Based Model")  
+  
+Very similar to the first model. Nice confidence interval, and as seen below, decent stats.  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/auto_5_stats.png "Fifth Auto-Arima Based Model Stats")  
+  
+It is no coincidence I only showed you the top two SARIMA models. The first and fifth model performed the best in the group.  
+  
+### Model Evaluation  
+  
+**AIC Scores**  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/aic_comparison.png "Model AIC Comparison")  
+**_Winner: auto_model_1_**  
+  
+**MAE Scores**  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/mae_comparison.png "Model MAE Comparison")  
+**_Winner: auto_model_5_**  
+  
+**Test RMSE Scores**  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/test_rmse_comparison.png "Model Test RMSE Comparison")  
+**_Winner: auto_model_1_**  
+  
+A full breakdown of the winning events:  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/results.png "Final Results")  
+  
 
 
-![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/eda_model_stats.png "EDA Based Model Stats") 
