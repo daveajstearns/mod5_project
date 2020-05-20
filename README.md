@@ -8,7 +8,8 @@ The models made in this project utilized the SARIMA function of `auto_arima` to 
 * final_sarima_models.ipynb - where you will find my data mining, analysis, and modeling
 * mod5_functions.py - functions that I made to make working easier
 * images - a folder with all of my images  
-The rest of the entries are preliminary notebooks that I used to get used to the data and begin side projects for the next part of the project.  
+  
+The rest of the entries are preliminary notebooks that I made to get used to the data and begin side projects for the next part of the project.  
   
 ----
 ## Introduction
