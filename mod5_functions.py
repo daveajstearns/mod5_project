@@ -382,3 +382,60 @@ def score_chart(x, y, metric):
     plt.ylabel(metric, size=20)
     plt.title('COMPARISON OF {} FOR DIFFERENT MODELS'.format(metric), size=26)
     plt.show()
+
+# def build_sarima(data, title, list_name, chart_title, order=(0,0,0), sorder=(0,0,0,0)):
+#     model = SARIMAX(data, order)
+#     fit = model.fit()
+#     print(fit.summary())
+#     forecast = fit.predict(start='2004-01-01', end='2024-01-01')
+#     print('\nForecasting 72 months into the future from the\ntraining data (2018 - 2024)\n.....\n....\n...\n..\n.')
+#     forecast = pd.DataFrame(forecast)
+#     forecast = rename_column(forecast, 0, 'forecast')
+#     prediction = fit.get_forecast(steps=72)
+#     pred_conf = prediction.conf_int()
+#     # Plot the nice graphs
+#     fig,ax = plt.subplots(figsize=(12,8))
+#     sns.lineplot(x=forecast.index, y=forecast['forecast'], color='c')
+#     sns.lineplot(x=master['2004':].index,
+#                 y=master['2004':]['interest'], color='w')
+#     ax.fill_between(pred_conf.index,
+#                     pred_conf.iloc[:, 0],
+#                     pred_conf.iloc[:, 1], color='r', alpha=0.25)
+#     plt.legend(['FORECAST','ACTUAL', '95% CONFIDENCE INTERVAL'], loc='upper left')
+#     plt.xlabel('TIME',size=18)
+#     plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
+#     plt.ylim(0,100)
+#     plt.title(title, size=24)
+#     chart_title = make_chart(fit, 'list_name')
+#     print(fit.plot_diagnostics(figsize=(20,10)))
+#     chart_title
+
+def cross_val_ts(data, n_split, order, seasonal_order):
+    X = data['interest']
+    splits = TimeSeriesSplit(n_splits=n_split)
+    rmse_cv = []
+    aic_cv = []
+    index = 1
+    for train_index, test_index in splits.split(X):
+        train = X[train_index]
+        test = X[test_index]
+        print('Observations: %d' % (len(train) + len(test)))
+        print('Training Observations: %d' % (len(train)))
+        print('Testing Observations: %d' % (len(test)))
+        train = train.to_frame()
+        train = rename_column(train, 0, 'interest')
+        test = test.to_frame()
+        test = rename_column(test, 0, 'interest')
+        train['date'] = data['date'][train.index[0]:train.index[-1]+1]
+        test['date'] = data['date'][test.index[0]:test.index[-1]+1]
+        train.set_index('date', inplace=True)
+        test.set_index('date', inplace=True)
+        model = SARIMAX(train, order=order, seasonal_order=seasonal_order, trend='t')
+        fit = model.fit()
+        forecast = fit.predict(start=test.index[0], end=test.index[-1])
+        rmse = np.sqrt(mean_squared_error(test['interest'], forecast))
+        rmse_cv.append(rmse)
+        aic_cv.append(fit.aic)
+        index += 1
+    print('\n\nCross validated RMSE on test data is: ',np.mean(rmse_cv))
+    print('\n Cross validated AIC for this model is: ', np.mean(aic_cv))
