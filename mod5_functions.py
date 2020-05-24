@@ -411,6 +411,17 @@ def score_chart(x, y, metric):
 #     chart_title
 
 def cross_val_ts(data, n_split, order, seasonal_order):
+    """Cross validation for Time Series Split with a SARIMA model.
+    -----------
+    data = original time series data frame, target variable gets assigned to X
+    
+    n_split = int, tells TimeSeriesSplit how many folds to make
+
+    order = (x,y,z), used for SARIMA model.
+    
+    seasonal_order = (w,x,y,z)
+    """
+
     X = data['interest']
     splits = TimeSeriesSplit(n_splits=n_split)
     rmse_cv = []
