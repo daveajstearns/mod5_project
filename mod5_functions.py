@@ -420,12 +420,16 @@ def cross_val_ts(data, n_split, order, seasonal_order):
     order = (x,y,z), used for SARIMA model.
     
     seasonal_order = (w,x,y,z)
+
+    **Important note: Your time series should not have the date as the index.**
     """
 
     X = data['interest']
     splits = TimeSeriesSplit(n_splits=n_split)
     rmse_cv = []
     aic_cv = []
+    mae_cv = []
+    mape_cv = []
     index = 1
     for train_index, test_index in splits.split(X):
         train = X[train_index]
@@ -447,6 +451,22 @@ def cross_val_ts(data, n_split, order, seasonal_order):
         rmse = np.sqrt(mean_squared_error(test['interest'], forecast))
         rmse_cv.append(rmse)
         aic_cv.append(fit.aic)
+        mae_cv.append(fit.mae)
+        mape_cv.append(
+                    np.mean(np.abs((test['interest']-forecast)/test['interest']))*100
+        )
         index += 1
-    print('\n\nCross validated RMSE on test data is: ',np.mean(rmse_cv))
-    print('\n Cross validated AIC for this model is: ', np.mean(aic_cv))
+    print('\n\nCross validated average RMSE on test data is: {}'.format(np.mean(rmse_cv)))
+    print('\n Cross validated average AIC for this model is: {}'.format(np.mean(aic_cv)))
+    print('\n  Cross validated average MAE for this model is: {}'.format(np.mean(mae_cv)))
+    print('\n   Cross validated average MAPE for this model is: {}% \n'.format(round(np.mean(mape_cv)),4))
+    return np.array(rmse_cv), np.array(aic_cv), np.array(mae_cv), np.array(mape_cv)
+
+def plot_models(y, title,model_eval=[], labels=[]):
+    fig, ax = plt.subplots(figsize=(12,8))
+    for model in model_eval:
+        sns.lineplot(x=np.arange(10), y=model, ax=ax)
+    plt.legend(labels, loc='best')
+    plt.xlabel('CV FOLD INDEX', size=18)
+    plt.ylabel(y,size=18)
+    plt.title(title,size=24)
