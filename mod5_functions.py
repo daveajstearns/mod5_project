@@ -143,19 +143,15 @@ def arima(data, order, keyword):
     mons4 = (np.datetime64('2023-01-01','M') - np.datetime64('2019-01-01','M')).tolist()
     plt.title('%s Months Out of Sample Forecast for %s'%(mons4,keyword))
 
-def rolling_stats(data, keyword, window):
-    r_mean=data.rolling(window=window).mean()
-    r_std=data.rolling(window=window).std()
+def rolling_stats(data, keyword):
     fig,ax = plt.subplots(figsize=(12,8))
-    sns.lineplot(x=data.index,y=data[keyword])
-    sns.lineplot(x=data.index,y=r_mean[keyword])
-    sns.lineplot(x=data.index,y=r_std[keyword])
-    plt.axhline(data['2000':'2010'][keyword].mean(), xmax=0.39, linestyle='dashed', linewidth=5, color='w')
-    plt.axhline(data['2010':][keyword].mean(), xmin=0.4, linestyle='dashed', linewidth=5, color='g')
-    plt.legend([keyword, 'ROLLING MEAN', 'ROLLING STDEV', 'PRE-2010 AVG INTEREST', 'POST-2010 AVG INTEREST'], loc='best')
+    sns.lineplot(x=data.index,y=data[keyword], color='forestgreen')
+    plt.axhline(data['2000':'2010'][keyword].mean(), xmax=0.39, linestyle='dashed', linewidth=5, color='firebrick')
+    plt.axhline(data['2010':][keyword].mean(), xmin=0.4, linestyle='dashed', linewidth=5, color='firebrick')
+    plt.legend([keyword,'PRE-2010 AVG INTEREST', 'POST-2010 AVG INTEREST'], loc='best')
     plt.xlabel('TIME',size=18)
     plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
-    plt.title(f'ROLLING STATS FOR %s'%keyword, size=24)
+    plt.title(f'TURN OF THE DECADE INDEX FOR %s'%keyword, size=24)
 
 def plot_ts(data,cities):
     fig, ax = plt.subplots(figsize=(12,8))
@@ -274,12 +270,14 @@ def dftest_tweets(data):
         test_output['Critical Value (%s)' %key]=value
     return(test_output)
 
-def nice_plot(data, keyword):
+def nice_plot(data, keyword, window):
     """Provided a time series data set and a specified keyword for which
          interest data was pulled, the function will print a nice looking 
           series graph in Seaborn."""
     fig,ax=plt.subplots(figsize=(8,6))
-    sns.lineplot(x=data.index, y=data[keyword])
+    r_mean=data.rolling(window=window).mean()
+    sns.lineplot(x=data.index,y=r_mean[keyword], color='firebrick')
+    sns.lineplot(x=data.index, y=data[keyword], color='forestgreen')
     ax = plt.xlabel('TIME')
     ax = plt.ylabel('GOOGLE TREND INTEREST INDEX')
     plt.title('TIME SERIES VISUAL OF %s' % (keyword))
@@ -302,9 +300,9 @@ def szn_decomp(data, keyword, model=[], graphs=[]):
         residual = decomp.resid
         fig,ax = plt.subplots(figsize=(12,8))
         if 'trend' in graphs:
-            sns.lineplot(x=trend.index, y=trend, color='w')
+            sns.lineplot(x=trend.index, y=trend, color='forestgreen')
         if 'szn' in graphs:
-            sns.lineplot(x=seasonal.index, y=seasonal, color='green')
+            sns.lineplot(x=seasonal.index, y=seasonal, color='black')
         if 'residual' in graphs:
             sns.lineplot(x=residual.index, y=residual)
         plt.legend(['TREND', 'SEASONALITY', 'RESIDUALS'], loc='best')
@@ -359,11 +357,11 @@ def sarima(data_train, data_val, keyword, p, d, q,P, D, Q, m=52):
     plt.ylabel('GOOGLE TREND INTEREST INDEX', size=18)
     plt.title(f'BEST SARIMA MODEL FOR %s'%keyword, size=24)
 
-def make_chart(fit, name):
+def make_chart(fit, data, name):
     """Provided with a fitted model object, will create a dictionary for the evaluation metrics.
     Then convert to data frame."""
-    dictionary = {'AIC': fit.aic, 'BIC':fit.bic, 'MAE':fit.mae, 'TRAIN RMSE':np.sqrt(mean_squared_error(master['2004':'2017']['interest'], forecast['2004-01-01':'2017-12-01'])),
-                                                      'TEST RMSE':np.sqrt(mean_squared_error(master['2018':]['interest'], forecast['2018-01-01':'2020-05-01']))}
+    dictionary = {'AIC': fit.aic, 'BIC':fit.bic, 'MAE':fit.mae, 'TRAIN RMSE':np.sqrt(mean_squared_error(data['2004':'2017']['interest'], forecast['2004-01-01':'2017-12-01'])),
+                                                      'TEST RMSE':np.sqrt(mean_squared_error(data['2018':]['interest'], forecast['2018-01-01':'2020-05-01']))}
     frame = pd.DataFrame.from_dict(dictionary, orient='index')
     frame = rename_column(frame, 0, name)
     return frame
@@ -374,9 +372,9 @@ def compare_scores(metric, data=[]):
         scores[frame.columns[0]] = (frame.loc[metric,:][0])
     return scores
 
-def score_chart(x, y, metric):
+def score_chart(x, y, metric, color="GnBu_d"):
     fig, ax = plt.subplots(figsize=(14,8))
-    ax = sns.barplot(x=x,y=y)    
+    ax = sns.barplot(x=x,y=y, palette=color)    
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
     plt.xlabel('MODEL', size=20)
     plt.ylabel(metric, size=20)
@@ -430,6 +428,7 @@ def cross_val_ts(data, n_split, order, seasonal_order):
     aic_cv = []
     mae_cv = []
     mape_cv = []
+    bic_cv = []
     index = 1
     for train_index, test_index in splits.split(X):
         train = X[train_index]
@@ -455,18 +454,33 @@ def cross_val_ts(data, n_split, order, seasonal_order):
         mape_cv.append(
                     np.mean(np.abs((test['interest']-forecast)/test['interest']))*100
         )
+        bic_cv.append(fit.bic)
         index += 1
+    aic_list = [num for num in enumerate(aic_cv)]
+    bic_list = [num for num in enumerate(bic_cv)]
     print('\n\nCross validated average RMSE on test data is: {}'.format(np.mean(rmse_cv)))
-    print('\n Cross validated average AIC for this model is: {}'.format(np.mean(aic_cv)))
+    print('\n Cross validated Area Under Curve AIC for this model is: {}'.format(auc(aic_list[0],aic_list[1])))
+    print('\n  Cross validated Area Under Curve BIC for this model is: {}'.format(auc(bic_list[0],bic_list[1])))
     print('\n  Cross validated average MAE for this model is: {}'.format(np.mean(mae_cv)))
     print('\n   Cross validated average MAPE for this model is: {}% \n'.format(round(np.mean(mape_cv)),4))
-    return np.array(rmse_cv), np.array(aic_cv), np.array(mae_cv), np.array(mape_cv)
+    return np.array(rmse_cv), np.array(aic_cv), np.array(mae_cv), np.array(mape_cv), np.array(bic_cv)
 
 def plot_models(y, title,model_eval=[], labels=[]):
     fig, ax = plt.subplots(figsize=(12,8))
     for model in model_eval:
-        sns.lineplot(x=np.arange(10), y=model, ax=ax)
+        sns.lineplot(x=np.arange(10), y=model, ax=ax, palette='husl')
     plt.legend(labels, loc='best')
     plt.xlabel('CV FOLD INDEX', size=18)
     plt.ylabel(y,size=18)
     plt.title(title,size=24)
+
+def compare_models(model1, model2, mod1_title, mod2_title):
+        aic_pc = ((aic[model2]-aic[model1])/aic[model1])*100
+        bic_pc = ((bic[model2]-bic[model1])/bic[model1])*100
+        mae_pc = ((mae[model2]-mae[model1])/mae[model1])*100
+        test_rmse_pc = ((test_rmse[model2]-test_rmse[model1])/test_rmse[model1])*100
+        print('The percent improvements from {} to {},\n where a stronger negative number relates to higher improvement,\n are the following: \n'.format(mod1_title, mod2_title))
+        print('AIC Improvements: ',aic_pc,'\n',
+              'BIC Improvements: ',bic_pc,'\n',
+              'MAE Improvments: ',mae_pc,'\n',
+              'Test RMSE Improvements: ',test_rmse_pc)
