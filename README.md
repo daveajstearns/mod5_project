@@ -110,15 +110,18 @@ I made a third model available, as the next two iterations with auto_arima produ
 **AIC Scores**  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/aic_comparison.png "Model AIC Comparison")  
 **_Winner: auto_model_1_**  
-  
+    
+    
 **MAE Scores**  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/mae_comparison.png "Model MAE Comparison")  
-**_Winner: auto_model_5_**  
-  
+**_Winner: auto_model_2_**  
+    
+    
 **Test RMSE Scores**  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/test_rmse_comparison.png "Model Test RMSE Comparison")  
 **_Winner: auto_model_1_**  
-  
+    
+    
 A full breakdown of the winning events:  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/results.png "Final Results")  
   
