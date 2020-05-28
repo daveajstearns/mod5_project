@@ -126,7 +126,7 @@ I made a third model available, as the next two iterations with auto_arima produ
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/master/images/percent_improvements.png "Percent Improvment Over Baseline") 
 
 ---
-   
+### Cross Validation   
 Once this was finished, I looked into how I could validate the robustness of my model evaluations. I only tested the validity of my models on the 90:10 split I mentioned before. I developed a sliding window cross-validation function using `sklearn TimeSeriesSplit`, seen in my notebook as `cross_val_ts` which would return five lists: RMSE, AIC, MAE, MAPE, and BIC - in that order. This function allowed me to get cross validated evaluation metrics for my models, and actually swayed some of the final conclusions. I specified **10** cross validation splits, however, you can do more or less and it will still work the same.  
   
 **The results from cross validation are below.**
