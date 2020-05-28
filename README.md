@@ -14,7 +14,8 @@ The rest of the entries are preliminary notebooks that I made to get used to the
 ----
 ## Introduction
 The goal of this project is to utilize the skills obtained over the past three months of hard work and dedication in this intense data science bootcamp. Since the beginning of my time in the program, I have been exploring the concept of **urban farming** with consideration to my background in biology and agriculture. Urban farming is a complex subject; a revolutionary approach to agriculture due to its non-renewable resource reduction (water) but with a caveat in regards to the energy usage urban farms need in order to be feasible. An urban farm that has impact on its community is a farm that can continuously produce fresh produce year round without interruption. A simple garden on top of a building or in an amenity space, as we have seen in some areas, is not sufficient. The concept of urban agriculture is an industry disrupting idea, but one that I feel must take place in order to reduce food insecurity and transportation emissions, improve food safety, create food independence, and a host of other issues related to the difficulties we face with traditional ag.  
-  ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/gg_bk.jpg "Gotham Greens, Brooklyn")
+  ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/gg_bk.jpg "Gotham Greens, Brooklyn"). 
+  Figure 1
 
 It has been said that this concept is one of the hot topics of the decade. 
 
@@ -42,7 +43,7 @@ There were many interesting topics, but I decided to go with:
 5) `aeroponic`   
 These search terms were checked using `FuzzyWuzzy` to make sure I wasn't using a form of those terms that might lend itself to more data.
 (Aeroponics is really cool, and you can find aeroponically, vertically grown veggies at your local Whole Foods from AeroFarms in Newark, NJ.)  
-![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/aero_farms2.jpg "AeroFarms, Newark, NJ")  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/aero_farms2.jpg "AeroFarms, Newark, NJ") Figure 2  
   
 I used my `get_int()` function to get the historical interest in these topics between [2004-01-01 : 2020-05-18], including *indoor farm*. The series were added together and averaged to create the master series, `master`. This would be the data that the forecasting model was built off of. 
 
@@ -149,4 +150,10 @@ The knowledge gained from this portion of this project shows that it is possible
   
 Please follow along, as I plan on incorporating some more advanced techniques to this time series model. Last but not least, I plan on showing you all that we can create rooftop greenhouses all across Manhattan with robots inside planting, maintaining, harvesting, and packaging.  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/bowery.png "Bowery Farming's Mission")
-
+Figure 3 
+  
+---
+### Citations
+Figure 1: https://www.gothamgreens.com/our-farms/
+Figure 2: https://aerofarms.com/
+Figure 3: https://boweryfarming.com/our-produce
