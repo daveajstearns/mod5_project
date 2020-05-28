@@ -1,7 +1,7 @@
 # Flatiron School Data Science Capstone Project
 ----
 ## Abstract  
-The models made in this project utilized the SARIMA function of `auto_arima` to find the best parameters for the time series. The time series data was harvested using the `General Mills pytrends` pseudo-API for Google Trends. It was found that there was a statistically significant increase in interest in topics regarding *indoor farming* from pre-2010 to post-2010 - thus achieving its *topic of the decade* status. The best model used the parameters **(0,1,1)x(1,1,1,12)** with the lowest AIC, BIC, and Test RMSE amongst the seven models tested.
+The models made in this project utilized the SARIMA function of `auto_arima` to find the best parameters for the time series. The time series data was harvested using the `General Mills pytrends` pseudo-API for Google Trends. It was found that there was a statistically significant increase in interest in topics regarding *indoor farming* from pre-2010 to post-2010 - thus achieving its *topic of the decade* status. I created a custom cross validation function to test the robustness of my models and evaluation. I found that after cross validation, the model with the lowest error was not the best fit model.
   
 ----  
 ## Table of Contents  
