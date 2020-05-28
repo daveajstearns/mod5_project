@@ -122,10 +122,21 @@ I made a third model available, as the next two iterations with auto_arima produ
 **_Winner: auto_model_1_**  
 ---    
     
-A full breakdown of the winning events:  
+**A full breakdown of the winning events:**  
 ![alt text](https://github.com/daveajstearns/mod5_project/blob/david-stearns/images/results.png "Final Results")  
+---
+   
+Once this was finished, I looked into how I could validate the robustness of my model evaluations. I only tested the validity of my model's on the 90:10 split I mentioned before. I developed a sliding window cross-validation function using `sklearn TimeSeriesSplit`, seen in my notebook as `cross_val_ts` which would return five lists: RMSE, AIC, MAE, MAPE, and BIC - in that order. This function allowed me to get cross validated evaluation metrics for my models, and actually swayed some of the final conclusions. I specified **10** cross validation splits, however, you can do more or less and it will still work the same.  
   
-----
+**The results from cross validation are below.**
+![alt text](https://github.com/daveajstearns/mod5_project/blob/master/images/cv_aic2.png "CV AIC")  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/master/images/cv_bic2.png "CV BIC")  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/master/images/cv_mae2.png "CV MAE")  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/master/images/cv_mape2.png "CV MAPE")  
+![alt text](https://github.com/daveajstearns/mod5_project/blob/master/images/cv_test_rmse2.png "CV TEST RMSE")  
+
+  
+---
 ## Conclusions  
 The final model selected for this project was the **auto_model_1** which had the lowest metrics where it counted; AIC and Test RMSE. While the **auto_model_5** did have a lower Train RMSE and MAE, these metrics are secondary to the importance of out-of-sample predictions and goodness of fit.  
   
